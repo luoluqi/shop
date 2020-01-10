@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <title>管理后台</title>
+
+
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body{    padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #eee;}
+        .form-signin {
+            max-width: 330px;
+            padding: 15px;
+            margin: 0 auto;
+        }
+        .form-signin-heading{text-align: center;}
+        .form-signin .form-control {
+            position: relative;
+            height: auto;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .form-signin input[type="text"] {
+            margin-bottom: -1px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        .btn-block{margin:20px 0 0 0;}
+        .error{display: none;}
+    </style>
+
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="form-signin">
+        <h2 class="form-signin-heading">登录</h2>
+        <p id="error" class="text-danger error" >用户名或密码错误</p>
+        <input type="text" id="username" class="form-control" placeholder="用户名" required autofocus>
+
+        <input type="password" id="password" class="form-control" placeholder="密码" required>
+
+        <button class="btn btn-lg btn-primary btn-block" type="submit" onclick="login()">登录</button>
+    </div>
+
+</div> <!-- /container -->
+
+
+</body>
+</html>
+<script src="http://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script>
+function login(){
+    var username = $.trim($("#username").val());
+    var password = $.trim($("#password").val());
+    $.post(
+        "/login",
+        {username:username,password:password},
+        function(res){
+            if(res.code == 1){
+                location.href = "/admin/index.html";
+            }else{
+                $("#error").show();
+            }
+        },'json'
+    )
+}
+</script>

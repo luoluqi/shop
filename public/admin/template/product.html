@@ -1,0 +1,212 @@
+<style>
+    .add-img{display: inline-block;width:100px;height:100px;text-align: center;border: 1px solid #ccc;vertical-align: top;margin:0 3px 3px 0;position:relative;}
+    .del-img{position: absolute;top:0;right:0;background: #fff;font-size: 1.5em;color:red;cursor:pointer;padding:0 2px;}
+    .add-img img{max-width:100%;max-height:100%;}
+    .product-list{padding:20px 0;}
+    .product-item{display: inline-block;vertical-align: middle;margin: 10px;width:250px;height:440px;border: 1px solid #dcdcdc;}
+    .product-img-p{height:250px;text-align: center;font-size: 0;}
+    .product-img-p:before{content:"";display:inline-block;height:100%;vertical-align: middle;}
+    .product-img{max-width:100%;max-height:100%;cursor:pointer;}
+    .product-name{padding:5px 10px;}
+    .product-name span{height:42px;display: inline-block;}
+    .product-price{font-size:1.2em;color: #F40;font-weight: 700;padding:5px 10px;}
+    .product-ca{padding:5px 10px;}
+    .product-status{padding:5px 10px;}
+    .product-op{padding:5px 10px;}
+    .style-img{max-width: 100px;max-height: 100px;}
+    .style-name{width:40%;display: inline-block;}
+    .style-item{padding:0 0 15px 0;}
+    .style-img-p{width:150px;display: inline-block;}
+    .product-line{border-top:1px solid #dbdbdb;margin: 20px 0;}
+</style>
+<div id="productApp">
+    <h1 class="page-header">商品管理</h1>
+
+    <div @click="toAdd()" class="btn btn-primary" >添加一个商品</div>
+    <div class="form-horizontal row" style="margin: 30px 0;">
+        <label class="col-sm-1 control-label">名称</label>
+        <div class="col-sm-2">
+            <input v-model.trim="query.name" type="text" class="form-control"  placeholder="输入名称">
+        </div>
+        <label class="col-sm-1 control-label">分类</label>
+        <div class="col-sm-2">
+            <select v-model.trim="query.categoryId" type="text" class="form-control">
+                <option value="">请选择</option>
+                <option v-for="c in categoryList" :value="c.id">{{c.name}}</option>
+            </select>
+        </div>
+        <label class="col-sm-1 control-label">状态</label>
+        <div class="col-sm-2">
+            <select v-model.trim="query.status" type="text" class="form-control">
+                <option value="">请选择</option>
+                <option value="0">下架</option>
+                <option value="1">上架</option>
+
+            </select>
+        </div>
+        <div class="col-sm-1">
+            <div @click="getProductList(1)" class="btn btn-primary" >查询</div>
+        </div>
+    </div>
+
+    <div class="product-list">
+        <div v-for="p in productList" class="product-item">
+            <div class="product-img-p">
+                <img @click="toUpdate(p.id)" :src="'/image/' + p.img.split(',')[0]" class="product-img" />
+            </div>
+            <div class="product-price">￥{{p.price}}</div>
+            <div class="product-name"><span>{{p.name}}</span></div>
+
+            <div v-if="p.category != null" class="product-ca">{{p.category.name}}</div>
+            <div class="product-status">
+                <span v-if="p.status == 0">下架</span>
+                <span v-if="p.status == 1">上架</span>
+            </div>
+            <div class="product-op">
+                <div @click="toUpdate(p.id)" class="btn btn-primary">修改</div>
+                <div @click="del(p.id)" class="btn btn-danger">删除</div>
+            </div>
+        </div>
+
+    </div>
+    <div v-if="productList.length == 0">无数据</div>
+    <nav v-if="productList.length != 0" aria-label="Page navigation">
+        <ul class="pagination pagination-lg">
+            <li :class="{disabled :  pageNum == 1}" @click="getProductList(pageNum - 1)">
+                <a   aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <li v-for="p in page" :class="{active : p == pageNum}" @click="getProductList(p)"><a >{{p}}</a></li>
+
+            <li :class="{disabled :  pageNum == page[page.length-1]}" @click="getProductList(pageNum + 1)">
+                <a  aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        <span v-if="isUpdate">修改商品</span>
+                        <span v-else>添加商品</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+
+                    <p v-if="isErr" class="bg-danger beat" style="padding:15px;">{{errMsg}}</p>
+
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">名称</label>
+                            <div class="col-sm-9">
+                                <input v-model.trim="product.name" type="text" class="form-control" placeholder="输入名称">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">分类</label>
+                            <div class="col-sm-9">
+                                <select v-model="product.categoryId" class="form-control">
+
+                                    <option v-for="c in categoryList" :value="c.id">{{c.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="product-line"></div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">
+                                图片
+                                <br><small class="text-danger">(建议图片宽高比,1:1)</small>
+                            </label>
+                            <div class="col-sm-9">
+                                <div v-for="img in imgList" class="add-img">
+                                    <span @click="deleteImg(img)" type="button" class=" del-img" >&times;</span>
+                                    <img :src="'/image/' + img" />
+                                </div>
+                                <div @click="uploadImg()" class="btn btn-primary">点击上传图片</div>
+                                <input id="uploadImg" multiple="multiple" type="file" style="display: none;"  />
+                            </div>
+                        </div>
+                        <div class="product-line"></div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">
+                                型号/款式
+                                <br><small class="text-danger">(建议图片宽高比,1:1)</small>
+                            </label>
+                            <div class="col-sm-9">
+                                <div v-for="(s,index) in styleList" class="style-item">
+                                    <div class="style-img-p">
+                                        <img class="style-img" v-if="s.img != ''" :src="'/image/' + s.img" />
+                                        <div @click="uploadStyleImg(index)" v-if="s.img == ''" class="btn btn-info btn-sm">上传图片</div>
+                                    </div>
+                                    <input @change="changeStyleName(index,$event)" :value="s.name" type="text" class="form-control style-name" placeholder="输入款式">
+                                    <div @click="deleteStyle(index)" class="btn btn-danger btn-sm">删除</div>
+                                </div>
+                                <div @click="addStyle()"  class="btn btn-primary ">添加一个款式</div>
+                                <input id="uploadStyleImg" type="file" style="display: none;"  />
+                            </div>
+                        </div>
+                        <div class="product-line"></div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">尺码</label>
+                            <div class="col-sm-9">
+                                <div v-for="(s,index) in product.sizes" class="style-item">
+                                    <div class="style-img-p">
+
+                                    </div>
+                                    <input @change="changeSizeName(index,$event)" :value="s.name" type="text" class="form-control style-name" placeholder="输入尺码">
+                                    <div @click="deleteSize(index)" class="btn btn-danger btn-sm">删除</div>
+                                </div>
+                                <div @click="addSize()"  class="btn btn-primary ">添加一个尺码</div>
+
+                            </div>
+                        </div>
+                        <div class="product-line"></div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">价格</label>
+                            <div class="col-sm-4 input-group" style="padding: 0 15px;">
+                                <div class="input-group-addon">￥</div>
+                                    <input v-model.trim="product.price" type="number" class="form-control">
+                                <div class="input-group-addon">元</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">描述</label>
+                            <div class="col-sm-9">
+                                <textarea v-model.trim="product.desc" type="text" class="form-control" style="height: 100px;"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <div class="checkbox">
+                                    <label>
+                                        <input  type="checkbox"
+                                                v-model="product.status"
+                                                true-value="1"
+                                                false-value="0"> 是否上架
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="clearfix"></div>
+                </div>
+                <div class="modal-footer">
+
+                    <button @click="submit()" type="button" class="btn btn-primary">提交</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

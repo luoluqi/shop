@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>以图找图</title>
+    <style>
+        img{max-width: 100%;}
+        .container{width:1200px;margin:0 auto;}
+        .func-item{width:570px;border:1px solid #ccc;margin: 5px;padding: 5px;display: inline-block;vertical-align: top;}
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div id="sameVm" class="func-item">
+        <h1>找相同的图</h1>
+        <button onclick="uploadImg()">上传图片</button>
+        <input id="uploadFile" type="file" style="display: none;" />
+        <div id="sameImgPrev"> </div>
+        <div v-if="showList">
+            <h4>发现以下相同图片</h4>
+            <div v-if="findList.length > 0" v-for="i in findList">摘要：{{i.brief}}</div>
+            <div v-if="findList.length == 0" >无</div>
+        </div>
+    </div>
+    <div id="similarVm" class="func-item">
+        <h1>找相似的图</h1>
+        <button onclick="uploadSimilar()">上传图片</button>
+        <input id="uploadSimilar" type="file" style="display: none;" />
+        <div id="similarPrev"> </div>
+        <div v-if="showList">
+            <h4>发现以下相似图片</h4>
+            <div v-if="findList.length > 0" v-for="i in findList">摘要：{{i.brief}}</div>
+            <div v-if="findList.length == 0" >无</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.17-beta.0/vue.js"></script>
+<script src="https://cdn.bootcss.com/layer/3.1.0/layer.js"></script>
+<link href="https://cdn.bootcss.com/layer/3.1.0/theme/default/layer.css" rel="stylesheet">
+<script>
+    var sameVm = new Vue({
+        el:"#sameVm",
+        data:{
+            showList:false,
+            findList:[]
+        },
+        methods:{
+            setFindList:function(list){
+                this.showList= true;
+                this.findList = list;
+            }
+        }
+    });
+    var similarVm = new Vue({
+        el:"#similarVm",
+        data:{
+            showList:false,
+            findList:[]
+        },
+        methods:{
+            setFindList:function(list){
+                this.showList= true;
+                this.findList = list;
+            }
+        }
+    });
+
+    function uploadImg(){
+
+        $("#uploadFile").click();
+
+        $("#uploadFile").off("change");
+        $("#uploadFile").change(function(){
+            var file = document.getElementById("uploadFile").files[0];
+            preview(file,document.getElementById("sameImgPrev"));
+            var fileType = file.name.split(".")[1].toUpperCase();
+            if(!(fileType == "JPG" || fileType == "PNG" || fileType == "JPEG")){
+                alert("请选择jpg、png文件");
+                return;
+            }
+
+
+            var formData = new FormData();
+            formData.append("uploadfile",file);
+            if(file){
+                layer.load();
+                $.ajax({
+                    url: "/same/find",
+                    type: "POST",
+                    async: true,
+                    cache: false,
+                    processData: false,// 告诉jQuery不要去处理发送的数据
+                    contentType: false,// 告诉jQuery不要去设置Content-Type请求头
+                    data: formData,
+                    success: function(data){
+                        layer.closeAll('loading');
+                        console.log(data);
+                        $("#uploadFile").remove();
+                        $("body").append("<input type='file' id='uploadFile' style='display: none;' />");
+                        sameVm.setFindList(data.result);
+                    },
+                    error: function(err) {
+                        layer.closeAll('loading');
+                        console.log(err);
+                        $("#uploadFile").remove();
+                        $("body").append("<input type='file' id='uploadFile'  style='display: none;' />");
+
+
+                    }
+                });
+            }
+
+        });
+    }
+    function uploadSimilar(){
+
+        $("#uploadSimilar").click();
+
+        $("#uploadSimilar").off("change");
+        $("#uploadSimilar").change(function(){
+            var file = document.getElementById("uploadSimilar").files[0];
+            preview(file,document.getElementById("similarPrev"));
+            var fileType = file.name.split(".")[1].toUpperCase();
+            if(!(fileType == "JPG" || fileType == "PNG" || fileType == "JPEG")){
+                alert("请选择jpg、png文件");
+                return;
+            }
+
+
+            var formData = new FormData();
+            formData.append("uploadfile",file);
+            if(file){
+                layer.load();
+                $.ajax({
+                    url: "/similar/find",
+                    type: "POST",
+                    async: true,
+                    cache: false,
+                    processData: false,// 告诉jQuery不要去处理发送的数据
+                    contentType: false,// 告诉jQuery不要去设置Content-Type请求头
+                    data: formData,
+                    success: function(data){
+                        layer.closeAll('loading');
+                        console.log(data);
+                        $("#uploadSimilar").remove();
+                        $("body").append("<input type='file' id='uploadSimilar' style='display: none;' />");
+                        similarVm.setFindList(data.result);
+                    },
+                    error: function(err) {
+                        layer.closeAll('loading');
+                        console.log(err);
+                        $("#uploadSimilar").remove();
+                        $("body").append("<input type='file' id='uploadSimilar'  style='display: none;' />");
+
+
+                    }
+                });
+            }
+
+        });
+    }
+
+    function preview(file,el){
+
+
+        var img=new Image()  ;
+
+        var url=window.URL.createObjectURL(file)  // 得到bolb对象路径，可当成普通的文件路径一样使用，赋值给src;
+
+        img.src=url;
+
+        el.innerHTML = "";
+        el.appendChild(img);
+
+    }
+</script>

@@ -1,0 +1,109 @@
+<div id="categoryApp">
+<h1 class="page-header">分类管理</h1>
+
+
+
+
+    <div @click="toAdd()" class="btn btn-primary" >添加分类</div>
+
+    <div class="form-horizontal row" style="margin: 30px 0;">
+        <label class="col-sm-1 control-label">名称</label>
+        <div class="col-sm-3">
+            <input v-model.trim="query.name" type="text" class="form-control"  placeholder="输入名称">
+        </div>
+        <div @click="getList(1)" class="btn btn-primary" >查询</div>
+    </div>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+
+            <th>名称</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr v-for="(c,index) in list">
+
+            <td>{{c.name}}</td>
+            <td>
+                <span v-if="c.status == 1">启用</span>
+                <span v-if="c.status == 0">禁用</span>
+            </td>
+            <td>
+                <div @click="toUpdate(c.id)" class="btn btn-primary">修改</div>
+                <div @click="del(c.id)" class="btn btn-danger">删除</div>
+            </td>
+
+        </tr>
+
+        </tbody>
+    </table>
+    <div v-if="list.length == 0">无数据</div>
+    <nav v-if="list.length != 0" aria-label="Page navigation">
+        <ul class="pagination pagination-lg">
+            <li :class="{disabled :  pageNum == 1}" @click="getList(pageNum - 1)">
+                <a   aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <li v-for="p in page" :class="{active : p == pageNum}" @click="getList(p)"><a >{{p}}</a></li>
+
+            <li :class="{disabled :  pageNum == page[page.length-1]}" @click="getList(pageNum + 1)">
+                <a  aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        <span v-if="isUpdate">修改分类</span>
+                        <span v-else>添加分类</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+
+                    <p v-if="isErr" class="bg-danger" style="padding:15px;">{{errMsg}}</p>
+
+                    <form class="form-horizontal">
+                        <label for="inputEmail3" class="col-sm-2 control-label">名称</label>
+                        <div class="col-sm-10">
+                            <input v-model.trim="category.name" type="text" class="form-control" id="inputEmail3" placeholder="输入名称">
+                        </div>
+                    </form>
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <div class="checkbox">
+                                <label>
+                                    <input  type="checkbox"
+                                            v-model="category.status"
+                                            true-value="1"
+                                            false-value="0"> 启用
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="modal-footer">
+
+                    <button @click="submit()" type="button" class="btn btn-primary">提交</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+

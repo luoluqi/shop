@@ -1,0 +1,47 @@
+<div id="userApp">
+<h1 class="page-header">用户管理</h1>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>名称</th>
+                <th>openid</th>
+
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr v-for="(u,index) in list">
+
+                <td>{{u.name}}</td>
+                <td>{{u.openid}}</td>
+                <td>
+
+                    <div @click="del(u.id)" class="btn btn-danger">删除</div>
+                </td>
+
+            </tr>
+
+            </tbody>
+        </table>
+        <div v-if="list.length == 0">无数据</div>
+        <nav v-if="list.length != 0" aria-label="Page navigation">
+            <ul class="pagination pagination-lg">
+                <li :class="{disabled :  pageNum == 1}" @click="getList(pageNum - 1)">
+                    <a   aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li v-for="p in page" :class="{active : p == pageNum}" @click="getList(p)"><a >{{p}}</a></li>
+
+                <li :class="{disabled :  pageNum == page[page.length-1]}" @click="getList(pageNum + 1)">
+                    <a  aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>

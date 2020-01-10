@@ -1,0 +1,264 @@
+<style>
+    .add-img{display: inline-block;width:100px;height:100px;text-align: center;border: 1px solid #ccc;vertical-align: top;margin:0 3px 3px 0;position:relative;}
+    .del-img{position: absolute;top:0;right:0;background: #fff;font-size: 1.5em;color:red;cursor:pointer;padding:0 2px;}
+    .add-img img{max-width:100%;max-height:100%;}
+    .product-list{padding:20px 0;}
+    .product-item{display: inline-block;margin: 10px;width:250px;height:440px;border: 1px solid #dcdcdc;}
+    .theme-item{display: inline-block;margin: 10px;width:250px;height:390px;border: 1px solid #dcdcdc;}
+    .product-img-p{height:250px;text-align: center;font-size: 0;}
+    .product-img-p:before{content:"";display:inline-block;height:100%;vertical-align: middle;}
+    .product-img{max-width:100%;max-height:100%;cursor:pointer;}
+    .product-name{padding:5px 10px;}
+    .product-name span{height:42px;display: inline-block;}
+    .product-price{font-size:1.2em;color: #F40;font-weight: 700;padding:5px 10px;}
+    .product-ca{padding:5px 10px;}
+    .product-status{padding:5px 10px;}
+    .product-op{padding:5px 10px;}
+    .style-img{max-width: 100px;max-height: 100px;}
+    .style-name{width:40%;display: inline-block;}
+    .style-item{padding:0 0 15px 0;}
+    .style-img-p{width:100px;display: inline-block;}
+    .theme-name{font-size:1.2em;font-weight: 700;padding:5px 10px;}
+    .theme-pro-num{padding:5px 10px;color: #F40;cursor:pointer;}
+</style>
+<div id="themeApp">
+    <h1 class="page-header">主题管理</h1>
+
+    <div @click="toAdd()" class="btn btn-primary" >添加一个主题</div>
+    <div class="form-horizontal row" style="margin: 30px 0;">
+        <label class="col-sm-1 control-label">名称</label>
+        <div class="col-sm-2">
+            <input v-model.trim="query.name" type="text" class="form-control"  placeholder="输入名称">
+        </div>
+
+        <div class="col-sm-1">
+            <div @click="getThemeList(1)" class="btn btn-primary" >查询</div>
+        </div>
+    </div>
+
+    <div class="product-list">
+        <div v-for="t in themeList" class="theme-item">
+            <div class="product-img-p">
+                <img @click="toUpdate(t.id)" :src="'/image/' + t.img.split(',')[0]" class="product-img" />
+            </div>
+
+            <div class="theme-name"><span>{{t.name}}</span></div>
+            <div class="theme-pro-num">
+                <span @click="toLookProduct(t.id)">共有{{t.themeProducts.length}}件商品</span>
+
+            </div>
+
+            <div class="product-op">
+                <div @click="toAddProduct(t.id)" class="btn btn-primary btn-sm">添加商品</div>
+                <div @click="toUpdate(t.id)" class="btn btn-primary">修改</div>
+                <div @click="del(t.id)" class="btn btn-danger">删除</div>
+            </div>
+        </div>
+    </div>
+    <div v-if="themeList.length == 0">无数据</div>
+    <nav v-if="themeList.length != 0" aria-label="Page navigation">
+        <ul class="pagination pagination-lg">
+            <li :class="{disabled :  themePageNum == 1}" @click="getThemeList(themePageNum - 1)">
+                <a   aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <li v-for="p in themePage" :class="{active : p == themePageNum}" @click="getThemeList(p)"><a >{{p}}</a></li>
+
+            <li :class="{disabled :  themePageNum == themePage[themePage.length-1]}" @click="getThemeList(themePageNum + 1)">
+                <a  aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        <span v-if="isUpdate">修改主题</span>
+                        <span v-else>添加主题</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+
+                    <p v-if="isErr" class="bg-danger beat" style="padding:15px;">{{errMsg}}</p>
+
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">名称</label>
+                            <div class="col-sm-9">
+                                <input v-model.trim="theme.name" type="text" class="form-control" placeholder="输入名称">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">
+                                图片
+                                <br><small class="text-danger">(建议图片宽高比,1:1)</small>
+                            </label>
+                            <div class="col-sm-9">
+                                <div v-for="img in imgList" class="add-img">
+                                    <span @click="deleteImg(img)" type="button" class=" del-img" >&times;</span>
+                                    <img :src="'/image/' + img" />
+                                </div>
+                                <div @click="uploadImg()" class="btn btn-primary">点击上传图片</div>
+                                <input id="uploadImg" multiple="multiple" type="file" style="display: none;"  />
+                            </div>
+                        </div>
+
+                    </form>
+
+                    <div class="clearfix"></div>
+                </div>
+                <div class="modal-footer">
+
+                    <button @click="submit()" type="button" class="btn btn-primary">提交</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal -->
+    <div class="modal fade " id="addProduct" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addProductLabel">
+                        <span>为《{{theme.name}}》添加商品</span>
+
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-horizontal row" style="margin: 30px 0;">
+                        <label class="col-sm-1 control-label">名称</label>
+                        <div class="col-sm-2">
+                            <input v-model.trim="product.name" type="text" class="form-control"  placeholder="输入名称">
+                        </div>
+                        <label class="col-sm-1 control-label">分类</label>
+                        <div class="col-sm-2">
+                            <select v-model.trim="product.categoryId" type="text" class="form-control">
+                                <option value="">请选择</option>
+                                <option v-for="c in categoryList" :value="c.id">{{c.name}}</option>
+                            </select>
+                        </div>
+                        <label class="col-sm-1 control-label">状态</label>
+                        <div class="col-sm-2">
+                            <select v-model.trim="product.status" type="text" class="form-control">
+                                <option value="">请选择</option>
+                                <option value="0">下架</option>
+                                <option value="1">上架</option>
+
+                            </select>
+                        </div>
+                        <div class="col-sm-1">
+                            <div @click="getProductList(1)" class="btn btn-primary" >查询</div>
+                        </div>
+                    </div>
+                    <div class="product-list">
+                        <div v-for="p in productList" class="product-item">
+                            <div class="product-img-p">
+                                <img :src="'/image/' + p.img.split(',')[0]" class="product-img" />
+                            </div>
+                            <div class="product-price">￥{{p.price}}</div>
+                            <div class="product-name"><span>{{p.name}}</span></div>
+
+                            <div class="product-ca">{{p.category.name}}</div>
+                            <div class="product-status">
+                                <span v-if="p.status == 0">下架</span>
+                                <span v-if="p.status == 1">上架</span>
+                            </div>
+                            <div class="product-op">
+                                <div v-if="!p.isHave" @click="addProduct(p.id)" class="btn btn-primary">添加进主题</div>
+                                <p v-if="p.isHave" class="text-primary">已添加进《{{theme.name}}》</p>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div v-if="productList.length == 0">无数据</div>
+                    <nav v-if="productList.length != 0" aria-label="Page navigation">
+                        <ul class="pagination pagination-lg">
+                            <li :class="{disabled :  productPageNum == 1}" @click="getProductList(productPageNum - 1)">
+                                <a   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li v-for="p in productPage" :class="{active : p == productPageNum}" @click="getProductList(p)"><a >{{p}}</a></li>
+
+                            <li :class="{disabled :  productPageNum == productPage[productPage.length-1]}" @click="getProductList(productPageNum + 1)">
+                                <a  aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+
+
+
+                    <div class="clearfix"></div>
+                </div>
+                <div class="modal-footer">
+
+
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade " id="lookProduct" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="lookProductLabel">
+                        <span>查看《{{theme.name}}》的商品</span>
+
+                    </h4>
+                </div>
+                <div class="modal-body">
+
+                    <div class="product-list">
+                        <div v-for="tp in theme.themeProducts" class="product-item">
+                            <div class="product-img-p">
+                                <img :src="'/image/' + tp.product.img.split(',')[0]" class="product-img" />
+                            </div>
+                            <div class="product-price">￥{{tp.product.price}}</div>
+                            <div class="product-name"><span>{{tp.product.name}}</span></div>
+
+                            <div class="product-ca">{{tp.product.category.name}}</div>
+                            <div class="product-status">
+                                <span v-if="tp.product.status == 0">下架</span>
+                                <span v-if="tp.product.status == 1">上架</span>
+                            </div>
+                            <div class="product-op">
+                                <div @click="delProduct(tp.themeId,tp.product.id)" class="btn btn-primary">删除</div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="clearfix"></div>
+                </div>
+                <div class="modal-footer">
+
+
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

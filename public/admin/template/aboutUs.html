@@ -1,0 +1,41 @@
+<div id="aboutUsApp">
+    <h1 class="page-header">关于我们</h1>
+
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label class="col-sm-3 control-label">企业名称</label>
+            <div class="col-sm-9">
+                <input v-model.trim="company.name" type="text" class="form-control" placeholder="企业名称">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">客服电话</label>
+            <div class="col-sm-9">
+                <input v-model.trim="company.phone" type="text" class="form-control" placeholder="客服电话">
+            </div>
+        </div>
+
+
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label">描述</label>
+            <div class="col-sm-9">
+                <textarea v-model.trim="company.desc" type="text" class="form-control" style="height: 100px;"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3 control-label"></label>
+            <div class="col-sm-9">
+                <button @click="setCompany()" type="button" class="btn btn-primary">提交</button>
+            </div>
+        </div>
+
+
+
+    </form>
+
+
+
+</div>

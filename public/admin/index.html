@@ -1,0 +1,87 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+
+    <title>管理后台</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <!-- Custom styles for this template -->
+    <link href="/admin/css/dashboard.css" rel="stylesheet">
+
+
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">管理后台</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <!--<ul class="nav navbar-nav navbar-right">
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Profile</a></li>
+                <li><a href="#">Help</a></li>
+            </ul>
+            <form class="navbar-form navbar-right">
+                <input type="text" class="form-control" placeholder="Search...">
+            </form>-->
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li data-menu="category" class="active menu"><a href="#/">分类管理</a></li>
+                <li data-menu="product" class="menu"><a href="#/product">商品管理</a></li>
+                <li data-menu="theme" class="menu"><a href="#/theme">主题管理</a></li>
+                <li data-menu="lead" class="menu"><a href="#/lead">设置首页轮播图</a></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li data-menu="order" class="menu"><a href="#/order">订单管理</a></li>
+                <li data-menu="user" class="menu"><a href="#/user">用户管理</a></li>
+                <li data-menu="address" class="menu"><a href="#/address">地址管理</a></li>
+                <li data-menu="aboutUs" class="menu"><a href="#/aboutUs">关于我们</a></li>
+            </ul>
+
+        </div>
+        <div ui-view class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/require.js/2.3.5/require.min.js"></script>
+
+
+<script src="/admin/js/app.js"></script>
+
+<script>
+
+</script>
